@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --color-glass: rgba(255,255,255,0.35);
+  --color-glass-hover: rgba(255,255,255,0.5);
+  --color-glass-border: rgba(255,255,255,0.4);
+  --color-soft-blue: #6c8cfa;
+  --color-soft-purple: #8b7cf7;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(135deg, #e4e8ff 0%, #d4d8ff 40%, #e8e0ff 100%);
+  color: #2d2d4a;
+}
+
+canvas {
+  display: block;
+}
+
+.glass {
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.4);
+}
+
+@keyframes slide-in {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.15s ease-out;
+}
