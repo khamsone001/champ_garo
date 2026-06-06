@@ -117,30 +117,32 @@ export default function Lobby() {
         )}
       </div>
 
-      <Modal isOpen={showAIModal} onClose={() => setShowAIModal(false)} title="AI Difficulty">
+      <Modal isOpen={showAIModal} onClose={() => setShowAIModal(false)} title="Select Difficulty">
         <div className="space-y-2">
           {DIFFICULTIES.map((d) => (
             <button
               key={d.value}
               onClick={() => setSelectedDiff(d.value)}
-              className={`w-full p-3 rounded-xl text-left transition-all ${
+              className={`w-full p-4 rounded-xl text-left transition-all ${
                 selectedDiff === d.value
-                  ? 'bg-white/50 shadow-sm'
+                  ? 'glass shadow-sm'
                   : 'bg-white/20 hover:bg-white/30'
               }`}
             >
-              <div className={`text-sm font-medium mb-0.5 ${selectedDiff === d.value ? 'text-[#2d2d4a]' : 'text-[#2d2d4a]/60'}`}>{d.label}</div>
+              <div className={`text-sm font-semibold mb-0.5 ${selectedDiff === d.value ? 'text-[#2d2d4a]' : 'text-[#2d2d4a]/60'}`}>{d.label}</div>
               <div className="text-xs text-[#6b6b8d]/70">{d.desc}</div>
             </button>
           ))}
-          <Button className="w-full mt-4" onClick={handleStartAI}>Start</Button>
+          <Button className="w-full mt-4" onClick={handleStartAI}>Start Game</Button>
         </div>
       </Modal>
 
       <Modal isOpen={showCreateModal} onClose={handleCancelRoom} title="Room Created">
         <div className="text-center">
-          <p className="text-[#6b6b8d]/70 text-sm mb-4">Share this code:</p>
-          <div className="text-3xl font-mono tracking-[0.25em] text-[#2d2d4a]/80 bg-white/30 rounded-xl py-4 px-4 mb-4">{createdCode}</div>
+          <p className="text-[#6b6b8d]/70 text-sm mb-5">Share this code with your friend</p>
+          <div className="inline-block glass rounded-xl py-4 px-8 mb-5">
+            <span className="text-3xl font-mono tracking-[0.3em] text-[#2d2d4a]/80">{createdCode}</span>
+          </div>
           {error && <p className="text-xs text-red-400/70 mb-3">{error}</p>}
           {waiting ? (
             <>

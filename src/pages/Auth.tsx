@@ -35,12 +35,12 @@ export default function Auth() {
           {tab === 'login' ? 'Welcome back' : 'Create account'}
         </h1>
 
-        <div className="flex mb-5 bg-white/20 rounded-lg p-0.5">
+        <div className="flex mb-6 bg-white/25 rounded-xl p-0.5">
           {(['login', 'register'] as Tab[]).map((t) => (
             <button
               key={t}
-              className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${
-                tab === t ? 'bg-white/50 text-[#2d2d4a]' : 'text-[#6b6b8d]/70'
+              className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                tab === t ? 'glass text-[#2d2d4a]' : 'text-[#6b6b8d]/60 hover:text-[#2d2d4a]/60'
               }`}
               onClick={() => { setTab(t); setError(null); }}
             >
@@ -54,20 +54,20 @@ export default function Auth() {
             <input
               type="text" placeholder="Username"
               value={username} onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white/30 border border-white/30 rounded-lg text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/50 transition-colors"
+              className="w-full px-4 py-3 bg-white/40 border border-white/40 rounded-xl text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/60 transition-colors"
               required minLength={2}
             />
           )}
           <input
             type="email" placeholder="Email"
             value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white/30 border border-white/30 rounded-lg text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/50 transition-colors"
+            className="w-full px-4 py-3 bg-white/40 border border-white/40 rounded-xl text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/60 transition-colors"
             required
           />
           <input
             type="password" placeholder="Password"
             value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2.5 bg-white/30 border border-white/30 rounded-lg text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/50 transition-colors"
+            className="w-full px-4 py-3 bg-white/40 border border-white/40 rounded-xl text-[#2d2d4a]/80 text-sm placeholder-[#6b6b8d]/40 outline-none focus:border-white/60 transition-colors"
             required minLength={6}
           />
           {error && (

@@ -104,23 +104,27 @@ export default function Game() {
   return (
     <div className="h-full flex flex-col">
       {/* Toolbar */}
-      <div className="glass rounded-none px-5 py-3.5 flex items-center gap-3 text-sm">
-        <button onClick={handleLeave} className="text-[#6b6b8d] hover:text-[#2d2d4a] transition-colors">←</button>
-        <div className="flex items-center gap-1.5">
-          <span className={`w-2.5 h-2.5 rounded-full ${game.currentTurn === 'X' ? 'bg-[#6c8cfa]' : 'bg-[#6b6b8d]/20'}`} />
-          <span className={game.currentTurn === 'X' ? 'text-[#6c8cfa] font-semibold' : 'text-[#6b6b8d]/50'}>X</span>
-          <span className="text-[#6b6b8d]/30">·</span>
-          <span className={`w-2.5 h-2.5 rounded-full ${game.currentTurn === 'O' ? 'bg-[#8b7cf7]' : 'bg-[#6b6b8d]/20'}`} />
-          <span className={game.currentTurn === 'O' ? 'text-[#8b7cf7] font-semibold' : 'text-[#6b6b8d]/50'}>O</span>
+      <div className="glass rounded-none px-5 py-3 flex items-center justify-between text-sm">
+        <div className="flex items-center gap-3">
+          <button onClick={handleLeave} className="text-[#6b6b8d] hover:text-[#2d2d4a] transition-colors">←</button>
+          <div className="flex items-center gap-2">
+            <span className={`w-2.5 h-2.5 rounded-full ${game.currentTurn === 'X' ? 'bg-[#6c8cfa]' : 'bg-[#6b6b8d]/20'}`} />
+            <span className={game.currentTurn === 'X' ? 'text-[#6c8cfa] font-semibold' : 'text-[#6b6b8d]/50'}>X</span>
+            <span className="text-[#6b6b8d]/30">·</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${game.currentTurn === 'O' ? 'bg-[#8b7cf7]' : 'bg-[#6b6b8d]/20'}`} />
+            <span className={game.currentTurn === 'O' ? 'text-[#8b7cf7] font-semibold' : 'text-[#6b6b8d]/50'}>O</span>
+          </div>
+          <span className="text-[#2d2d4a]/60 font-medium">{turnText}</span>
         </div>
-        <span className="text-[#2d2d4a]/60 font-medium">{turnText}</span>
-        {mode === 'ai' && <span className="text-[#6b6b8d]/50 ml-auto">{difficulty}</span>}
-        <span className="text-[#6b6b8d]/30 text-xs font-mono ml-auto">#{game.moves.length}</span>
-        {game.status === 'playing' && (
-          <button onClick={handlePlayAgain} className="px-4 py-2 rounded-lg bg-white/30 text-[#2d2d4a]/70 text-xs hover:bg-white/50 transition-colors">
-            Restart
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {mode === 'ai' && <span className="text-[#6b6b8d]/50 capitalize">{difficulty}</span>}
+          <span className="text-[#6b6b8d]/30 text-xs font-mono">#{game.moves.length}</span>
+          {game.status === 'playing' && (
+            <button onClick={handlePlayAgain} className="px-4 py-1.5 rounded-lg bg-white/30 text-[#2d2d4a]/70 text-xs hover:bg-white/50 transition-colors">
+              Restart
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Board */}

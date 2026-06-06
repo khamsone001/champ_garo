@@ -55,11 +55,11 @@ export default function Leaderboard() {
           {(['rating', 'wins'] as const).map((s) => (
             <button
               key={s} onClick={() => setSortBy(s)}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                sortBy === s ? 'glass shadow-sm' : 'text-[#6b6b8d]/60 hover:text-[#2d2d4a]/60'
+              className={`px-5 py-2 rounded-lg text-xs font-medium transition-all ${
+                sortBy === s ? 'glass shadow-sm text-[#2d2d4a]/80' : 'text-[#6b6b8d]/50 hover:text-[#2d2d4a]/60'
               }`}
             >
-              By {s === 'rating' ? 'Rating' : 'Wins'}
+              {s === 'rating' ? 'Rating' : 'Wins'}
             </button>
           ))}
         </div>
@@ -69,17 +69,17 @@ export default function Leaderboard() {
         ) : (
           <div className="space-y-2">
             {sorted.map((player, i) => (
-              <div key={player.id} className="glass rounded-xl px-6 py-5 flex items-center gap-4 hover:bg-white/50 transition-colors">
-                <span className="w-8 text-center text-base text-[#6b6b8d]/50 font-mono">{i + 1}</span>
+              <div key={player.id} className="glass rounded-xl px-6 py-4 flex items-center gap-4 hover:bg-white/50 transition-colors">
+                <span className="w-8 text-center text-base text-[#6b6b8d]/40 font-mono">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-base text-[#2d2d4a]/80 truncate mb-1">{player.username}</div>
-                  <div className="text-sm text-[#6b6b8d]/60 truncate">
-                    {player.wins}W / {player.losses}L · {player.games_played}g
+                  <div className="text-base text-[#2d2d4a]/80 truncate">{player.username}</div>
+                  <div className="text-xs text-[#6b6b8d]/50 mt-0.5">
+                    {player.wins}W · {player.losses}L · {player.games_played}g
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-semibold text-[#2d2d4a]/70">{player.rating}</div>
-                  <div className="text-[10px] text-[#6b6b8d]/40 uppercase tracking-wider">Elo</div>
+                <div className="text-right min-w-[48px]">
+                  <div className="text-base font-semibold text-[#2d2d4a]/70">{player.rating}</div>
+                  <div className="text-[9px] text-[#6b6b8d]/35 uppercase tracking-wider">Elo</div>
                 </div>
               </div>
             ))}
