@@ -13,7 +13,7 @@ export default function Header() {
   const isGame = location.pathname === '/game';
 
   return (
-    <header className={`${isGame ? 'hidden' : 'glass border-b-0'} px-5 py-3`}>
+    <header className={`${isGame ? 'hidden' : 'bg-white/20 backdrop-blur-md border-b border-white/30'} px-5 py-3`}>
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <span className="w-5 h-5 rounded-md bg-gradient-to-br from-[#6c8cfa] to-[#8b7cf7] flex items-center justify-center text-white text-[10px] font-bold">G</span>

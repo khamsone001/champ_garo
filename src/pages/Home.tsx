@@ -1,43 +1,67 @@
 import { useNavigate } from 'react-router-dom';
-import Button from '../components/ui/Button';
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-8">
-      <div className="text-center animate-slide-in">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl glass mb-10 shadow-sm">
-          <div className="flex gap-3">
-            <span className="w-8 h-8 rounded bg-gradient-to-br from-[#6c8cfa] to-[#8b7cf7] flex items-center justify-center text-white text-sm font-bold">X</span>
-            <span className="w-8 h-8 rounded bg-gradient-to-br from-[#8b7cf7] to-[#6c8cfa] flex items-center justify-center text-white text-sm font-bold">O</span>
+    <div className="h-full flex flex-col items-center justify-center px-6">
+      <div className="flex flex-col items-center gap-10 animate-slide-in">
+
+        {/* Icon */}
+        <div className="w-24 h-24 rounded-[24px] bg-white/40 backdrop-blur-xl shadow-sm flex items-center justify-center">
+          <div className="flex items-center gap-3">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7c8cfa] to-[#9b7cf7] flex items-center justify-center text-white text-sm font-bold shadow-sm">
+              X
+            </span>
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#9b7cf7] to-[#7c8cfa] flex items-center justify-center text-white text-sm font-bold shadow-sm">
+              O
+            </span>
           </div>
         </div>
 
-        <h1 className="text-7xl font-light tracking-tight text-[#2d2d4a]/80 mb-4">
-          Gomoku
-        </h1>
-
-        <p className="text-base text-[#6b6b8d] mb-12">
-          19×19 · five in a row
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <Button size="lg" className="px-10 py-3.5 text-base" onClick={() => navigate('/lobby')}>
-            Play
-          </Button>
-          <Button variant="secondary" size="lg" className="px-10 py-3.5 text-base" onClick={() => navigate('/leaderboard')}>
-            Rankings
-          </Button>
+        {/* Title */}
+        <div className="text-center space-y-3">
+          <h1 className="text-6xl md:text-7xl font-light tracking-tight text-[#2d2d4a]/85">
+            Gomoku
+          </h1>
+          <p className="text-base text-[#6b6b8d]/60">
+            19×19 · five in a row
+          </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          {['vs AI', 'Local 2P', 'Online'].map((f) => (
-            <span key={f} className="px-4 py-2 text-sm text-[#6b6b8d]/60 bg-white/20 rounded-full">
-              {f}
-            </span>
+        {/* Tabs */}
+        <div className="flex bg-white/30 rounded-xl p-1 shadow-sm w-fit">
+          <button
+            onClick={() => navigate('/lobby')}
+            className="px-8 py-2.5 rounded-lg text-sm font-medium bg-white/80 text-[#2d2d4a] shadow-sm transition-all"
+          >
+            Play
+          </button>
+          <button
+            onClick={() => navigate('/leaderboard')}
+            className="px-8 py-2.5 rounded-lg text-sm font-medium text-[#6b6b8d]/70 hover:text-[#2d2d4a] transition-all"
+          >
+            Rankings
+          </button>
+        </div>
+
+        {/* Game modes */}
+        <div className="flex items-center gap-3">
+          {[
+            { label: 'vs AI', to: '/lobby' },
+            { label: 'Local 2P', to: '/game?mode=local' },
+            { label: 'Online', to: '/lobby' },
+          ].map(({ label, to }) => (
+            <button
+              key={label}
+              onClick={() => navigate(to)}
+              className="px-5 py-2.5 rounded-xl bg-white/30 text-[#6b6b8d]/70 text-sm font-medium hover:bg-white/50 hover:text-[#2d2d4a]/80 transition-all"
+            >
+              {label}
+            </button>
           ))}
         </div>
+
       </div>
     </div>
   );
