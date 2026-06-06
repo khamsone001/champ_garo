@@ -137,12 +137,16 @@ export async function submitMove(
   if (moveError) return moveError.message;
 
   const chan = supabase.channel(`game:${gameId}`);
-  await chan.send({
-    type: 'broadcast',
-    event: 'move',
-    payload: { position, player, moveNumber, winner, board: newBoard, currentTurn: nextTurn },
+  await chan.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      chan.send({
+        type: 'broadcast',
+        event: 'move',
+        payload: { position, player, moveNumber, winner, board: newBoard, currentTurn: nextTurn },
+      });
+    }
   });
-  supabase.removeChannel(chan);
+  setTimeout(() => supabase.removeChannel(chan), 1000);
 
   return null;
 }

@@ -10,7 +10,7 @@ import {
 import type { PlayAgainRequestPayload, GameResetPayload } from '../lib/onlineGame';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
-import type { Player, CellState, GameStatus } from '../types';
+import type { Player, CellState, GameStatus, Move } from '../types';
 
 export default function Game() {
   const navigate = useNavigate();
@@ -72,9 +72,17 @@ export default function Game() {
 
     unsubRef.current = subscribeToGameEvents(game.id, {
       onMove(payload) {
+        const currentMoves = useGameStore.getState().game.moves;
+        const incomingMove: Move = {
+          player: payload.player,
+          position: payload.position,
+          moveNumber: payload.moveNumber,
+          timestamp: Date.now(),
+        };
         setGameState({
           board: payload.board, currentTurn: payload.currentTurn,
-          status: payload.winner ? 'finished' : 'playing', winner: payload.winner, moves: [],
+          status: payload.winner ? 'finished' : 'playing', winner: payload.winner,
+          moves: [...currentMoves, incomingMove],
         });
       },
       onPlayAgainRequest(data) {
