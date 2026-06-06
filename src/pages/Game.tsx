@@ -5,7 +5,7 @@ import { useGameStore } from '../store/gameStore';
 import { useAuthStore } from '../store/authStore';
 import { getValidMoves, checkWin, isBoardFull, makeMove } from '../lib/gameLogic';
 import {
-  submitMove, fetchGameState, subscribeToGameEvents, broadcastGameEvent, createRematchGame,
+  submitMove, fetchGameState, subscribeToGameEvents, createRematchGame,
 } from '../lib/onlineGame';
 import type { PlayAgainRequestPayload, GameResetPayload } from '../lib/onlineGame';
 import Button from '../components/ui/Button';
@@ -18,6 +18,7 @@ export default function Game() {
   const { user } = useAuthStore();
   const { game, difficulty, mode, initGame, placePiece, resetGame, setGameState } = useGameStore();
   const unsubRef = useRef<(() => void) | null>(null);
+  const sendRef = useRef<((event: string, payload: any) => void) | null>(null);
   const onlinePlayerRef = useRef<Player | null>(null);
   const roomCodeRef = useRef<string>('');
   const [playAgainOpponent, setPlayAgainOpponent] = useState<PlayAgainRequestPayload | null>(null);
@@ -70,7 +71,7 @@ export default function Game() {
       onlinePlayerRef.current = game.playerX === user.id ? 'X' : game.playerO === user.id ? 'O' : onlinePlayerRef.current;
     }
 
-    unsubRef.current = subscribeToGameEvents(game.id, {
+    const sub = subscribeToGameEvents(game.id, {
       onMove(payload) {
         const currentMoves = useGameStore.getState().game.moves;
         const incomingMove: Move = {
@@ -104,7 +105,10 @@ export default function Game() {
       },
     });
 
-    return () => { unsubRef.current?.(); };
+    unsubRef.current = sub.unsubscribe;
+    sendRef.current = sub.send;
+
+    return () => { sub.unsubscribe(); sendRef.current = null; };
   }, [mode, game.id]);
 
   const validMoves = game.status === 'playing' ? getValidMoves(game.board) : [];
@@ -129,6 +133,9 @@ export default function Game() {
         status: winner ? 'finished' : 'playing', winner,
       });
       submitMove(game.id, user.id, position, player, newBoard, moveNumber, winner);
+      sendRef.current?.('move', {
+        position, player, moveNumber, winner, board: newBoard, currentTurn: player === 'X' ? 'O' : 'X',
+      });
     } else {
       if (mode === 'ai' && game.currentTurn !== 'X') return;
       placePiece(position);
@@ -137,9 +144,9 @@ export default function Game() {
 
   const handlePlayAgain = () => {
     if (mode === 'online') {
-      if (!game.id || !user) return;
+      if (!user) return;
       setSentPlayAgain(true);
-      broadcastGameEvent(game.id, 'play_again_request', {
+      sendRef.current?.('play_again_request', {
         userId: user.id,
         username: user.user_metadata?.username || user.email?.split('@')[0] || 'Player',
       });
@@ -158,7 +165,7 @@ export default function Game() {
     const rematch = await createRematchGame(roomCodeRef.current, game.playerX, game.playerO);
     if (!rematch) return;
 
-    await broadcastGameEvent(game.id, 'play_again_accept', rematch);
+    sendRef.current?.('play_again_accept', rematch);
 
     setGameState({
       id: rematch.id, board: rematch.board, currentTurn: rematch.currentTurn,
@@ -169,8 +176,8 @@ export default function Game() {
   };
 
   const handleDeclinePlayAgain = () => {
-    if (!playAgainOpponent || !game.id) return;
-    broadcastGameEvent(game.id, 'play_again_decline', { userId: user?.id });
+    if (!playAgainOpponent) return;
+    sendRef.current?.('play_again_decline', { userId: user?.id });
     setPlayAgainOpponent(null);
   };
 

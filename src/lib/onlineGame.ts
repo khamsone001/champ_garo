@@ -136,37 +136,8 @@ export async function submitMove(
 
   if (moveError) return moveError.message;
 
-  const chan = supabase.channel(`game:${gameId}`);
-  await chan.subscribe((status) => {
-    if (status === 'SUBSCRIBED') {
-      chan.send({
-        type: 'broadcast',
-        event: 'move',
-        payload: { position, player, moveNumber, winner, board: newBoard, currentTurn: nextTurn },
-      });
-    }
-  });
-  setTimeout(() => supabase.removeChannel(chan), 1000);
-
+  // Broadcast is handled by the caller via the persistent channel
   return null;
-}
-
-export function subscribeToGame(
-  gameId: string,
-  onMove: (data: OnlineMovePayload) => void,
-  onError?: (err: string) => void,
-) {
-  const channel = supabase.channel(`game:${gameId}`);
-
-  channel
-    .on('broadcast', { event: 'move' }, ({ payload }) => {
-      onMove(payload as OnlineMovePayload);
-    })
-    .subscribe((status) => {
-      if (status === 'CHANNEL_ERROR' && onError) onError('Connection error');
-    });
-
-  return () => supabase.removeChannel(channel);
 }
 
 export async function fetchGameState(gameId: string) {
@@ -202,7 +173,7 @@ export function subscribeToGameEvents(
     onPlayAgainDecline?: (data: { userId: string }) => void;
   },
   onError?: (err: string) => void,
-): () => void {
+): { unsubscribe: () => void; send: (event: string, payload: any) => void } {
   const channel = supabase.channel(`game:${gameId}`);
 
   channel
@@ -214,21 +185,12 @@ export function subscribeToGameEvents(
       if (status === 'CHANNEL_ERROR' && onError) onError('Connection error');
     });
 
-  return () => supabase.removeChannel(channel);
-}
-
-export async function broadcastGameEvent(
-  gameId: string,
-  event: string,
-  payload: Record<string, unknown>,
-) {
-  const chan = supabase.channel(`game:${gameId}`);
-  await chan.subscribe((status) => {
-    if (status === 'SUBSCRIBED') {
-      chan.send({ type: 'broadcast', event, payload });
-    }
-  });
-  setTimeout(() => supabase.removeChannel(chan), 1000);
+  return {
+    unsubscribe: () => supabase.removeChannel(channel),
+    send: (event: string, payload: any) => {
+      channel.send({ type: 'broadcast', event, payload });
+    },
+  };
 }
 
 export async function createRematchGame(
