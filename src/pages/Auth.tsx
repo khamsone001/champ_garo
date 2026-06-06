@@ -31,7 +31,7 @@ export default function Auth() {
   return (
     <div className="h-full flex items-center justify-center p-6">
       <div className="w-full max-w-sm glass rounded-2xl p-8 shadow-sm animate-scale-in">
-        <h1 className="text-xl font-light text-[#2d2d4a]/80 text-center mb-6">
+        <h1 className="text-2xl font-light text-[#2d2d4a]/80 text-center mb-6">
           {tab === 'login' ? 'Welcome back' : 'Create account'}
         </h1>
 

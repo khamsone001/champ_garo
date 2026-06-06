@@ -47,7 +47,7 @@ export default function Leaderboard() {
     <div className="h-full flex flex-col items-center p-8 overflow-auto">
       <div className="max-w-lg w-full animate-slide-in">
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-light text-[#2d2d4a]/80 mb-1">Leaderboard</h1>
+          <h1 className="text-3xl font-light text-[#2d2d4a]/80 mb-2">Leaderboard</h1>
           <p className="text-sm text-[#6b6b8d]/70">Top players</p>
         </div>
 
@@ -69,17 +69,17 @@ export default function Leaderboard() {
         ) : (
           <div className="space-y-2">
             {sorted.map((player, i) => (
-              <div key={player.id} className="glass rounded-xl px-5 py-4 flex items-center gap-4 hover:bg-white/50 transition-colors">
-                <span className="w-6 text-center text-sm text-[#6b6b8d]/50 font-mono">{i + 1}</span>
+              <div key={player.id} className="glass rounded-xl px-6 py-5 flex items-center gap-4 hover:bg-white/50 transition-colors">
+                <span className="w-8 text-center text-base text-[#6b6b8d]/50 font-mono">{i + 1}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-[#2d2d4a]/80 truncate mb-0.5">{player.username}</div>
-                  <div className="text-xs text-[#6b6b8d]/60 truncate">
+                  <div className="text-base text-[#2d2d4a]/80 truncate mb-1">{player.username}</div>
+                  <div className="text-sm text-[#6b6b8d]/60 truncate">
                     {player.wins}W / {player.losses}L · {player.games_played}g
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-base font-semibold text-[#2d2d4a]/70">{player.rating}</div>
-                  <div className="text-[9px] text-[#6b6b8d]/40 uppercase tracking-wider">Elo</div>
+                  <div className="text-lg font-semibold text-[#2d2d4a]/70">{player.rating}</div>
+                  <div className="text-[10px] text-[#6b6b8d]/40 uppercase tracking-wider">Elo</div>
                 </div>
               </div>
             ))}

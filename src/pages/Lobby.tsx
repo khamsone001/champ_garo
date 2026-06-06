@@ -76,13 +76,13 @@ export default function Lobby() {
   const handleStartAI = () => navigate(`/game?mode=ai&diff=${selectedDiff}`);
 
   const ModeCard = ({ icon, label, desc, onClick }: { icon: string; label: string; desc: string; onClick: () => void }) => (
-    <button onClick={onClick} className="w-full glass rounded-xl p-5 flex items-center gap-4 hover:bg-white/50 transition-all duration-150 text-left">
-      <span className="text-xl w-8 text-center shrink-0">{icon}</span>
+    <button onClick={onClick} className="w-full glass rounded-xl p-6 flex items-center gap-4 hover:bg-white/50 transition-all duration-150 text-left">
+      <span className="text-2xl w-10 text-center shrink-0">{icon}</span>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-[#2d2d4a]/80 mb-0.5">{label}</div>
-        <div className="text-xs text-[#6b6b8d]/70">{desc}</div>
+        <div className="text-base font-medium text-[#2d2d4a]/80 mb-1">{label}</div>
+        <div className="text-sm text-[#6b6b8d]/70">{desc}</div>
       </div>
-      <svg className="w-4 h-4 text-[#6b6b8d]/40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-5 h-5 text-[#6b6b8d]/40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
       </svg>
     </button>
@@ -92,8 +92,8 @@ export default function Lobby() {
     <div className="h-full flex flex-col items-center justify-center p-8">
       <div className="max-w-sm w-full animate-slide-in">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-light text-[#2d2d4a]/80 mb-1">Lobby</h1>
-          <p className="text-xs text-[#6b6b8d]/70">Choose a mode to play</p>
+          <h1 className="text-3xl font-light text-[#2d2d4a]/80 mb-2">Lobby</h1>
+          <p className="text-sm text-[#6b6b8d]/70">Choose a mode to play</p>
         </div>
 
         <div className="space-y-3">
