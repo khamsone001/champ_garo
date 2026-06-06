@@ -79,6 +79,19 @@ export async function joinRoom(code: string, userId: string) {
 
   if (updateError) return { room: null, error: 'Failed to update room' };
 
+  // Broadcast 'joined' to the room channel so the creator's UI navigates
+  const chan = supabase.channel(`room:${room.id}`);
+  chan.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      chan.send({
+        type: 'broadcast',
+        event: 'joined',
+        payload: { game_id: game.id, code: room.code },
+      });
+    }
+  });
+  setTimeout(() => supabase.removeChannel(chan), 1000);
+
   return {
     room: { ...room, player_o_id: userId, status: 'playing', game_id: game.id } as RoomData,
     error: null,
@@ -161,4 +174,93 @@ export async function fetchGameState(gameId: string) {
 
   if (error) return null;
   return data;
+}
+
+// ========== Play-again / Rematch ==========
+
+export interface PlayAgainRequestPayload {
+  userId: string;
+  username: string;
+}
+
+export interface GameResetPayload {
+  gameId: string;
+  board: CellState[][];
+  currentTurn: Player;
+}
+
+export function subscribeToGameEvents(
+  gameId: string,
+  callbacks: {
+    onMove?: (data: OnlineMovePayload) => void;
+    onPlayAgainRequest?: (data: PlayAgainRequestPayload) => void;
+    onPlayAgainAccept?: (data: GameResetPayload) => void;
+    onPlayAgainDecline?: (data: { userId: string }) => void;
+  },
+  onError?: (err: string) => void,
+): () => void {
+  const channel = supabase.channel(`game:${gameId}`);
+
+  channel
+    .on('broadcast', { event: 'move' }, ({ payload }) => callbacks.onMove?.(payload as OnlineMovePayload))
+    .on('broadcast', { event: 'play_again_request' }, ({ payload }) => callbacks.onPlayAgainRequest?.(payload as PlayAgainRequestPayload))
+    .on('broadcast', { event: 'play_again_accept' }, ({ payload }) => callbacks.onPlayAgainAccept?.(payload as GameResetPayload))
+    .on('broadcast', { event: 'play_again_decline' }, ({ payload }) => callbacks.onPlayAgainDecline?.(payload as { userId: string }))
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' && onError) onError('Connection error');
+    });
+
+  return () => supabase.removeChannel(channel);
+}
+
+export async function broadcastGameEvent(
+  gameId: string,
+  event: string,
+  payload: Record<string, unknown>,
+) {
+  const chan = supabase.channel(`game:${gameId}`);
+  await chan.subscribe((status) => {
+    if (status === 'SUBSCRIBED') {
+      chan.send({ type: 'broadcast', event, payload });
+    }
+  });
+  setTimeout(() => supabase.removeChannel(chan), 1000);
+}
+
+export async function createRematchGame(
+  roomCode: string,
+  playerXId: string,
+  playerOId: string,
+) {
+  const { data: room } = await supabase
+    .from('rooms')
+    .select('id')
+    .eq('code', roomCode)
+    .single();
+
+  if (!room) return null;
+
+  const emptyBoard: CellState[][] = Array.from({ length: 19 }, () => Array(19).fill(null));
+
+  const { data: game, error } = await supabase
+    .from('games')
+    .insert({
+      player_x_id: playerXId,
+      player_o_id: playerOId,
+      status: 'playing',
+      current_turn: 'X',
+      game_data: { board: emptyBoard },
+      move_history: [],
+    })
+    .select()
+    .single();
+
+  if (error || !game) return null;
+
+  await supabase
+    .from('rooms')
+    .update({ game_id: game.id, status: 'playing' })
+    .eq('id', room.id);
+
+  return { id: game.id, board: emptyBoard, currentTurn: 'X' as Player };
 }

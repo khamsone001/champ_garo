@@ -1,12 +1,15 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import GameBoard from '../components/game/GameBoard';
 import { useGameStore } from '../store/gameStore';
 import { useAuthStore } from '../store/authStore';
 import { getValidMoves, checkWin, isBoardFull, makeMove } from '../lib/gameLogic';
-import { submitMove, subscribeToGame, fetchGameState } from '../lib/onlineGame';
-import type { OnlineMovePayload } from '../lib/onlineGame';
+import {
+  submitMove, fetchGameState, subscribeToGameEvents, broadcastGameEvent, createRematchGame,
+} from '../lib/onlineGame';
+import type { PlayAgainRequestPayload, GameResetPayload } from '../lib/onlineGame';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import type { Player, CellState, GameStatus } from '../types';
 
 export default function Game() {
@@ -16,6 +19,9 @@ export default function Game() {
   const { game, difficulty, mode, initGame, placePiece, resetGame, setGameState } = useGameStore();
   const unsubRef = useRef<(() => void) | null>(null);
   const onlinePlayerRef = useRef<Player | null>(null);
+  const roomCodeRef = useRef<string>('');
+  const [playAgainOpponent, setPlayAgainOpponent] = useState<PlayAgainRequestPayload | null>(null);
+  const [sentPlayAgain, setSentPlayAgain] = useState(false);
 
   const myPlayer: Player | null = (() => {
     if (mode !== 'online' || !user) return null;
@@ -24,12 +30,15 @@ export default function Game() {
     return onlinePlayerRef.current;
   })();
 
+  // Init game from URL params
   useEffect(() => {
     const modeParam = searchParams.get('mode');
     const diffParam = searchParams.get('diff') as typeof difficulty | null;
 
     if (modeParam === 'online') {
       const gameId = searchParams.get('game');
+      const room = searchParams.get('room') || '';
+      roomCodeRef.current = room;
       if (!gameId) { navigate('/lobby'); return; }
       initGame('online');
       fetchGameState(gameId).then((data) => {
@@ -40,22 +49,55 @@ export default function Game() {
           id: gameId, playerX: data.player_x_id, playerO: data.player_o_id,
           currentTurn: data.current_turn as Player, board,
           status: data.status as GameStatus, winner: data.winner as Player | 'draw' | null, moves: [],
+          roomCode: room,
         });
         if (user) onlinePlayerRef.current = user.id === data.player_x_id ? 'X' : 'O';
       });
-      unsubRef.current = subscribeToGame(gameId, (payload: OnlineMovePayload) => {
-        setGameState({
-          board: payload.board, currentTurn: payload.currentTurn,
-          status: payload.winner ? 'finished' : 'playing', winner: payload.winner, moves: [],
-        });
-      }, () => {});
-      return () => { unsubRef.current?.(); };
     } else if (modeParam === 'ai' || modeParam === 'local') {
       initGame(modeParam, diffParam || 'medium');
     } else if (game.status === 'waiting') {
       initGame('local');
     }
   }, []);
+
+  // Subscribe to game events (move, play_again_*)
+  useEffect(() => {
+    if (mode !== 'online' || !game.id) return;
+
+    setPlayAgainOpponent(null);
+    setSentPlayAgain(false);
+    if (user) {
+      onlinePlayerRef.current = game.playerX === user.id ? 'X' : game.playerO === user.id ? 'O' : onlinePlayerRef.current;
+    }
+
+    unsubRef.current = subscribeToGameEvents(game.id, {
+      onMove(payload) {
+        setGameState({
+          board: payload.board, currentTurn: payload.currentTurn,
+          status: payload.winner ? 'finished' : 'playing', winner: payload.winner, moves: [],
+        });
+      },
+      onPlayAgainRequest(data) {
+        if (data.userId !== user?.id) {
+          setPlayAgainOpponent(data);
+          setSentPlayAgain(false);
+        }
+      },
+      onPlayAgainAccept(data) {
+        const { gameId, board, currentTurn } = data as GameResetPayload;
+        setGameState({
+          id: gameId, board, currentTurn, status: 'playing', winner: null, moves: [],
+        });
+        setPlayAgainOpponent(null);
+        setSentPlayAgain(false);
+      },
+      onPlayAgainDecline() {
+        setSentPlayAgain(false);
+      },
+    });
+
+    return () => { unsubRef.current?.(); };
+  }, [mode, game.id]);
 
   const validMoves = game.status === 'playing' ? getValidMoves(game.board) : [];
 
@@ -86,9 +128,42 @@ export default function Game() {
   }, [game, mode, myPlayer, user, validMoves, placePiece, setGameState]);
 
   const handlePlayAgain = () => {
-    unsubRef.current?.();
-    if (mode === 'ai') navigate(`/game?mode=ai&diff=${difficulty}`);
-    else resetGame();
+    if (mode === 'online') {
+      if (!game.id || !user) return;
+      setSentPlayAgain(true);
+      broadcastGameEvent(game.id, 'play_again_request', {
+        userId: user.id,
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'Player',
+      });
+    } else if (mode === 'ai') {
+      unsubRef.current?.();
+      navigate(`/game?mode=ai&diff=${difficulty}`);
+    } else {
+      unsubRef.current?.();
+      resetGame();
+    }
+  };
+
+  const handleAcceptPlayAgain = async () => {
+    if (!playAgainOpponent || !user || !game.playerX || !game.playerO || !roomCodeRef.current) return;
+
+    const rematch = await createRematchGame(roomCodeRef.current, game.playerX, game.playerO);
+    if (!rematch) return;
+
+    await broadcastGameEvent(game.id, 'play_again_accept', rematch);
+
+    setGameState({
+      id: rematch.id, board: rematch.board, currentTurn: rematch.currentTurn,
+      status: 'playing', winner: null, moves: [],
+    });
+    setPlayAgainOpponent(null);
+    setSentPlayAgain(false);
+  };
+
+  const handleDeclinePlayAgain = () => {
+    if (!playAgainOpponent || !game.id) return;
+    broadcastGameEvent(game.id, 'play_again_decline', { userId: user?.id });
+    setPlayAgainOpponent(null);
   };
 
   const handleLeave = () => {
@@ -119,11 +194,6 @@ export default function Game() {
         <div className="flex items-center gap-3">
           {mode === 'ai' && <span className="text-[#6b6b8d]/50 capitalize">{difficulty}</span>}
           <span className="text-[#6b6b8d]/30 text-xs font-mono">#{game.moves.length}</span>
-          {game.status === 'playing' && (
-            <button onClick={handlePlayAgain} className="px-4 py-1.5 rounded-lg bg-white/30 text-[#2d2d4a]/70 text-xs hover:bg-white/50 transition-colors">
-              Restart
-            </button>
-          )}
         </div>
       </div>
 
@@ -143,16 +213,39 @@ export default function Game() {
 
         {/* Game over overlay buttons */}
         {game.status === 'finished' && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 animate-slide-in">
-            <Button size="lg" onClick={handlePlayAgain}>
-              Play Again
-            </Button>
-            <Button variant="secondary" size="lg" onClick={handleLeave}>
-              {mode === 'online' ? 'Leave' : 'Home'}
-            </Button>
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 animate-slide-in">
+            <div className="flex gap-4">
+              {mode === 'online' && sentPlayAgain ? (
+                <span className="text-xs text-[#6b6b8d]/70">Waiting for opponent...</span>
+              ) : (
+                <Button size="lg" onClick={handlePlayAgain}>Play Again</Button>
+              )}
+              <Button variant="secondary" size="lg" onClick={handleLeave}>
+                {mode === 'online' ? 'Leave' : 'Home'}
+              </Button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Play-again request modal */}
+      <Modal
+        isOpen={playAgainOpponent !== null}
+        onClose={handleDeclinePlayAgain}
+        title="Play Again?"
+      >
+        <p className="text-sm text-[#6b6b8d]/70 text-center mb-6">
+          {playAgainOpponent?.username ?? 'Your opponent'} wants to play again
+        </p>
+        <div className="flex gap-3">
+          <Button variant="secondary" className="flex-1" onClick={handleDeclinePlayAgain}>
+            Decline
+          </Button>
+          <Button className="flex-1" onClick={handleAcceptPlayAgain}>
+            Accept
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

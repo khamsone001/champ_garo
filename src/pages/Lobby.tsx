@@ -30,25 +30,14 @@ export default function Lobby() {
     if (!roomId || !waiting) return;
 
     const channel = supabase.channel(`room:${roomId}`);
-    channel.on('broadcast', { event: 'ping' }, () => {}).subscribe();
-
-    const sub = supabase
-      .channel('room-db-changes')
-      .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
-        (payload) => {
-          const r = payload.new as any;
-          if (r.status === 'playing' && r.player_o_id) {
-            setWaiting(false);
-            unsubRef.current?.();
-            navigate(`/game?mode=online&room=${r.code}&game=${r.game_id}`);
-          }
-        },
-      )
+    channel
+      .on('broadcast', { event: 'joined' }, ({ payload }) => {
+        const { game_id, code } = payload as any;
+        navigate(`/game?mode=online&room=${code}&game=${game_id}`);
+      })
       .subscribe();
 
-    unsubRef.current = () => supabase.removeChannel(sub);
-    return () => { supabase.removeChannel(sub); supabase.removeChannel(channel); };
+    return () => { supabase.removeChannel(channel); };
   }, [roomId, waiting, navigate]);
 
   const handleCreateRoom = async () => {
