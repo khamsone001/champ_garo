@@ -89,21 +89,21 @@ export default function Lobby() {
   );
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-8">
+    <div className="h-full flex flex-col items-center justify-center p-6">
       <div className="max-w-sm w-full animate-slide-in">
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <h1 className="text-3xl font-light text-[#2d2d4a]/80 mb-2">Lobby</h1>
           <p className="text-sm text-[#6b6b8d]/70">Choose a mode to play</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-8">
           <ModeCard icon="🤖" label="vs Computer" desc="Play against AI" onClick={() => setShowAIModal(true)} />
           <ModeCard icon="👥" label="Local 2 Players" desc="Same device" onClick={() => navigate('/game?mode=local')} />
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-white/30" />
-            <span className="text-[10px] text-[#6b6b8d]/50 tracking-widest uppercase">Online</span>
-            <div className="flex-1 h-px bg-white/30" />
+          <div className="flex items-center gap-4 my-8">
+            <div className="flex-1 h-px bg-white/20" />
+            <span className="text-[10px] text-[#6b6b8d]/50 tracking-[0.2em] uppercase">Online</span>
+            <div className="flex-1 h-px bg-white/20" />
           </div>
 
           <ModeCard icon="🏠" label="Create Room" desc="Invite a friend" onClick={handleCreateRoom} />
@@ -111,7 +111,7 @@ export default function Lobby() {
         </div>
 
         {!user && (
-          <p className="text-center text-xs text-[#6b6b8d]/60 mt-5">
+          <p className="text-center text-xs text-[#6b6b8d]/60 mt-8">
             <button onClick={() => navigate('/auth')} className="text-[#6c8cfa] hover:text-[#5b7bff]">Sign in</button> to play online
           </p>
         )}

@@ -30,16 +30,16 @@ export default function Home() {
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-white/30 rounded-xl p-1 shadow-sm w-fit">
+        <div className="flex gap-2 bg-white/20 rounded-2xl p-2 shadow-sm w-80">
           <button
             onClick={() => navigate('/lobby')}
-            className="px-8 py-2.5 rounded-lg text-sm font-medium bg-white/80 text-[#2d2d4a] shadow-sm transition-all"
+            className="flex-1 py-6 rounded-xl text-base font-medium bg-white/85 text-[#2d2d4a] shadow-sm transition-all"
           >
             Play
           </button>
           <button
             onClick={() => navigate('/leaderboard')}
-            className="px-8 py-2.5 rounded-lg text-sm font-medium text-[#6b6b8d]/70 hover:text-[#2d2d4a] transition-all"
+            className="flex-1 py-6 rounded-xl text-base font-medium text-[#6b6b8d]/70 hover:bg-white/30 hover:text-[#2d2d4a] transition-all"
           >
             Rankings
           </button>
